@@ -16,12 +16,12 @@ if ! command -v sudo >/dev/null 2>&1; then
     exit 1
 fi
 
-echo -e "\n${BLUE}1. 🔓 Открытие порта 6060 в файерволе...${NC}"
+echo -e "\n${BLUE}1. 🔓 Открытие порта 80 в файерволе...${NC}"
 
 # UFW (Ubuntu/Debian)
 if command -v ufw >/dev/null 2>&1; then
     echo -e "${YELLOW}Настройка UFW...${NC}"
-    sudo ufw allow 6060/tcp
+    sudo ufw allow 80/tcp
     sudo ufw --force enable
     echo -e "${GREEN}✅ UFW настроен${NC}"
 fi
@@ -29,7 +29,7 @@ fi
 # Firewalld (CentOS/RHEL/Fedora)
 if command -v firewall-cmd >/dev/null 2>&1; then
     echo -e "${YELLOW}Настройка firewalld...${NC}"
-    sudo firewall-cmd --permanent --add-port=6060/tcp
+    sudo firewall-cmd --permanent --add-port=80/tcp
     sudo firewall-cmd --reload
     echo -e "${GREEN}✅ Firewalld настроен${NC}"
 fi
@@ -38,8 +38,8 @@ fi
 if command -v iptables >/dev/null 2>&1; then
     echo -e "${YELLOW}Настройка iptables...${NC}"
     # Проверяем, есть ли уже правило
-    if ! sudo iptables -C INPUT -p tcp --dport 6060 -j ACCEPT >/dev/null 2>&1; then
-        sudo iptables -I INPUT -p tcp --dport 6060 -j ACCEPT
+    if ! sudo iptables -C INPUT -p tcp --dport 80 -j ACCEPT >/dev/null 2>&1; then
+        sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
         echo -e "${GREEN}✅ Iptables правило добавлено${NC}"
     else
         echo -e "${GREEN}✅ Iptables правило уже существует${NC}"
@@ -64,7 +64,7 @@ echo -e "\n${BLUE}3. 🔄 Перезапуск сервиса...${NC}"
 
 # Останавливаем старые процессы
 pkill -f "next dev\|next start" >/dev/null 2>&1
-lsof -ti:6060 | xargs kill -9 >/dev/null 2>&1
+lsof -ti:80,6060 | xargs kill -9 >/dev/null 2>&1
 
 echo -e "${GREEN}✅ Старые процессы остановлены${NC}"
 
@@ -78,9 +78,10 @@ NODE_ENV=production bun run build >/dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Сборка завершена${NC}"
     
-    echo -e "${BLUE}Запуск сервера...${NC}"
-    # Запускаем в фоне с правильными параметрами
-    NODE_ENV=production PORT=6060 HOST=0.0.0.0 nohup bun run start > ../server.log 2>&1 &
+    echo -e "${BLUE}Запуск сервера на порту 80...${NC}"
+    # Запускаем в фоне с правильными параметрами (порт 80 требует sudo)
+    BUN_PATH=$(which bun)
+    sudo NODE_ENV=production PORT=80 HOST=0.0.0.0 nohup $BUN_PATH run start > ../server.log 2>&1 &
     SERVER_PID=$!
     
     # Ждем запуска
@@ -94,14 +95,14 @@ if [ $? -eq 0 ]; then
         echo -e "\n${BLUE}4. 🧪 Тестирование подключений...${NC}"
         
         # Локальный тест
-        if curl -s -m 5 http://localhost:6060 >/dev/null; then
+        if curl -s -m 5 http://localhost >/dev/null; then
             echo -e "${GREEN}✅ Локальное подключение: работает${NC}"
         else
             echo -e "${RED}❌ Локальное подключение: не работает${NC}"
         fi
         
         # Сетевой тест
-        if curl -s -m 5 http://${LOCAL_IP}:6060 >/dev/null; then
+        if curl -s -m 5 http://${LOCAL_IP} >/dev/null; then
             echo -e "${GREEN}✅ Сетевое подключение: работает${NC}"
         else
             echo -e "${RED}❌ Сетевое подключение: не работает${NC}"
@@ -110,10 +111,10 @@ if [ $? -eq 0 ]; then
         echo -e "\n${GREEN}🎉 Настройка завершена!${NC}"
         echo "=============================================="
         echo -e "${BLUE}📱 Сайт доступен по адресам:${NC}"
-        echo -e "${GREEN}   • Локально:    http://localhost:6060${NC}"
-        echo -e "${GREEN}   • В сети:      http://${LOCAL_IP}:6060${NC}"
+        echo -e "${GREEN}   • Локально:    http://localhost${NC}"
+        echo -e "${GREEN}   • В сети:      http://${LOCAL_IP}${NC}"
         if [ "$PUBLIC_IP" != "недоступен" ]; then
-            echo -e "${GREEN}   • Публично:    http://${PUBLIC_IP}:6060${NC}"
+            echo -e "${GREEN}   • Публично:    http://${PUBLIC_IP}${NC}"
         fi
         echo "=============================================="
         echo -e "${YELLOW}💡 Логи сервера: tail -f server.log${NC}"

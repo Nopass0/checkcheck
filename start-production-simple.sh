@@ -24,9 +24,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✅ Запуск сервера на порту 6060${NC}"
-echo -e "${BLUE}Доступ: http://localhost:6060${NC}"
-echo -e "${BLUE}Сеть: http://0.0.0.0:6060${NC}"
+echo -e "${GREEN}✅ Запуск сервера на порту 80${NC}"
+echo -e "${BLUE}Доступ: http://localhost${NC}"
+echo -e "${BLUE}Сеть: http://0.0.0.0${NC}"
 
-# Запускаем сервер без интерактивности
-NODE_ENV=production PORT=6060 HOST=0.0.0.0 bun run start
+# Запускаем сервер без интерактивности (порт 80 требует sudo)
+echo -e "${YELLOW}Порт 80 требует прав администратора...${NC}"
+BUN_PATH=$(which bun)
+sudo NODE_ENV=production PORT=80 HOST=0.0.0.0 $BUN_PATH run start

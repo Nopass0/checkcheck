@@ -1,0 +1,8 @@
+$ next start -H 0.0.0.0
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:6060
+   - Network:      http://0.0.0.0:6060
+
+ ✓ Starting...
+ ✓ Ready in 776ms
+error: script "start" was terminated by signal SIGKILL (Forced quit)
