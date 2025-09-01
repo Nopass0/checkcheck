@@ -1,15 +1,33 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Отключаем Turbopack для продакшена (стабильнее)
+  turbo: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    },
+  },
+  
+  // Настройки для работы на любом хосте
+  experimental: {
+    allowMiddlewareResponseBody: true,
+  },
+
+  // Настройки для продакшена
+  output: 'standalone',
+  
   async headers() {
     return [
       {
-        // Применяем CORS ко всем API маршрутам
-        source: "/api/:path*",
+        // Применяем CORS ко всем маршрутам
+        source: "/(.*)",
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "*", // Разрешаем запросы с любых доменов
+            value: "*",
           },
           {
             key: "Access-Control-Allow-Methods",
@@ -17,7 +35,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization",
+            value: "Content-Type, Authorization, X-Requested-With",
           },
           {
             key: "Access-Control-Max-Age",
@@ -26,6 +44,11 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+  },
+
+  // Настройки сервера для работы на всех интерфейсах
+  serverRuntimeConfig: {
+    port: process.env.PORT || 6060,
   },
 };
 

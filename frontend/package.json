@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev-no-turbo": "next dev",
-    "build": "next build --turbopack",
-    "start": "next start",
+    "dev-prod": "next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0",
+    "start-prod": "next start -H 0.0.0.0 -p 6060",
     "lint": "eslint"
   },
   "dependencies": {

@@ -10,6 +10,16 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}🚀 Запуск CheckCheck приложения${NC}"
 echo "================================="
 
+# Определяем режим запуска
+if [ "$1" = "prod" ] || [ "$1" = "production" ]; then
+    echo -e "${GREEN}🏭 Режим: ПРОДАКШЕН${NC}"
+    echo -e "${YELLOW}   Использование: ./run.sh prod${NC}"
+else
+    echo -e "${BLUE}🔧 Режим: РАЗРАБОТКА${NC}"
+    echo -e "${YELLOW}   Для продакшена: ./run.sh prod${NC}"
+fi
+echo "================================="
+
 # Проверяем наличие .env файла
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}⚠️  Файл .env не найден. Создаем из примера...${NC}"
@@ -50,6 +60,39 @@ if ! command -v bun &> /dev/null; then
     exit 1
 fi
 
+# Функция для открытия портов в файерволе
+open_firewall_ports() {
+    echo -e "${BLUE}🔓 Настройка файервола...${NC}"
+    
+    # Проверяем, есть ли права sudo
+    if command -v sudo >/dev/null 2>&1; then
+        # UFW (Ubuntu/Debian)
+        if command -v ufw >/dev/null 2>&1; then
+            echo -e "${YELLOW}📡 Открываю порт 6060 в UFW...${NC}"
+            sudo ufw allow 6060/tcp >/dev/null 2>&1 || echo -e "${YELLOW}⚠️  Не удалось настроить UFW (возможно, уже настроен)${NC}"
+        fi
+        
+        # Firewalld (CentOS/RHEL/Fedora)
+        if command -v firewall-cmd >/dev/null 2>&1; then
+            echo -e "${YELLOW}📡 Открываю порт 6060 в firewalld...${NC}"
+            sudo firewall-cmd --permanent --add-port=6060/tcp >/dev/null 2>&1 || true
+            sudo firewall-cmd --reload >/dev/null 2>&1 || true
+        fi
+        
+        # Iptables (универсальный)
+        if command -v iptables >/dev/null 2>&1; then
+            echo -e "${YELLOW}📡 Настраиваю iptables...${NC}"
+            sudo iptables -C INPUT -p tcp --dport 6060 -j ACCEPT >/dev/null 2>&1 || \
+            sudo iptables -I INPUT -p tcp --dport 6060 -j ACCEPT >/dev/null 2>&1 || true
+        fi
+        
+        echo -e "${GREEN}✅ Настройка файервола завершена${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Нет прав sudo - пропускаю настройку файервола${NC}"
+        echo -e "${YELLOW}   Убедитесь, что порт 6060 открыт вручную${NC}"
+    fi
+}
+
 # Проверяем наличие необходимых файлов
 if [ ! -f "ishodnik.pdf" ]; then
     echo -e "${RED}❌ Файл ishodnik.pdf не найден${NC}"
@@ -65,6 +108,9 @@ if [ ! -d "frontend" ]; then
     echo -e "${RED}❌ Папка frontend не найдена${NC}"
     exit 1
 fi
+
+# Открываем порты в файерволе
+open_firewall_ports
 
 # Функция для остановки процессов при выходе
 cleanup() {
@@ -115,9 +161,25 @@ echo -e "${GREEN}✅ Telegram бот запущен (PID: $BOT_PID)${NC}"
 
 echo -e "\n${BLUE}🌐 Запуск Frontend...${NC}"
 cd frontend
-PORT=6060 bun run dev &
-FRONTEND_PID=$!
-echo -e "${GREEN}✅ Frontend запущен (PID: $FRONTEND_PID)${NC}"
+
+# Определяем режим запуска
+if [ "$1" = "prod" ] || [ "$1" = "production" ]; then
+    echo -e "${BLUE}🏭 Режим продакшена - сборка и запуск...${NC}"
+    bun run build
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Ошибка сборки Frontend${NC}"
+        exit 1
+    fi
+    PORT=6060 bun run start-prod &
+    FRONTEND_PID=$!
+    echo -e "${GREEN}✅ Frontend собран и запущен в продакшен режиме (PID: $FRONTEND_PID)${NC}"
+else
+    echo -e "${BLUE}🔧 Режим разработки...${NC}"
+    PORT=6060 HOST=0.0.0.0 bun run dev-prod &
+    FRONTEND_PID=$!
+    echo -e "${GREEN}✅ Frontend запущен в режиме разработки (PID: $FRONTEND_PID)${NC}"
+fi
+
 cd ..
 
 # Ждем запуска сервисов
