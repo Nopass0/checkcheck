@@ -100,8 +100,21 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
-    # Запускаем бота
-    application.run_polling()
+    print("🤖 Telegram бот запускается...")
+    
+    try:
+        # Запускаем бота с обработкой конфликтов
+        application.run_polling(
+            drop_pending_updates=True,  # Игнорируем старые обновления
+            close_loop=False
+        )
+    except Exception as e:
+        if "Conflict" in str(e):
+            print("⚠️  Конфликт: другой экземпляр бота уже запущен")
+            print("   Остановите другие экземпляры или используйте другой токен")
+        else:
+            print(f"❌ Ошибка запуска бота: {e}")
+        return
 
 
 if __name__ == "__main__":
