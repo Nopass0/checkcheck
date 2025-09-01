@@ -53,7 +53,7 @@ def replace_text(file, file1, new_text):  # Замена текста в фай�
         new_text["operation_id_1"],
         "Служба поддержки ", "fb@tbank.ru",
         "По вопросам зачисления обращайтесь к получателю",
-        f"Квитанция  № {new_text['receipt_number']}",
+        f"Квитанция  № {new_text['receipt_number'].replace('№', '').replace('№ ', '').strip()}",
     ]
 
     for i in range(len(text)):

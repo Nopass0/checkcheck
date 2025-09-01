@@ -22,14 +22,14 @@ export function generateOperationId(): string {
 }
 
 export function generateReceiptNumber(): string {
-  // Генерируем номер квитанции в формате № 1-115-078-540-299
+  // Генерируем номер квитанции в формате 1-115-078-540-299 (без знака №)
   const part1 = Math.floor(Math.random() * 9) + 1 // 1-9
   const part2 = Math.floor(Math.random() * 900) + 100 // 100-999
   const part3 = Math.floor(Math.random() * 900) + 100 // 100-999
   const part4 = Math.floor(Math.random() * 900) + 100 // 100-999
   const part5 = Math.floor(Math.random() * 900) + 100 // 100-999
   
-  return `№ ${part1}-${part2}-${part3}-${part4}-${part5}`
+  return `${part1}-${part2}-${part3}-${part4}-${part5}`
 }
 
 export function generateRandomAmount(): string {

@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { InputWithGenerator } from '@/components/ui/input-with-generator'
+import { AmountInput } from '@/components/ui/amount-input'
+import { ReceiptInput } from '@/components/ui/receipt-input'
 import { HistoryPanel } from '@/components/ui/history-panel'
 import { FileText, Download, AlertCircle, CheckCircle, Shuffle, Trash2 } from 'lucide-react'
 import { 
@@ -246,7 +248,7 @@ export default function Home() {
 Анна К.
 Тинькофф Банк
 A52351158320990600000200115
-№ 1-115-078-540-299
+1-115-078-540-299
 408178102000****7022`}
                             className="min-h-[250px] font-mono text-sm"
                             required
@@ -270,7 +272,7 @@ A52351158320990600000200115
                           placeholder="01.02.2025 12:23:43"
                         />
                         
-                        <InputWithGenerator
+                        <AmountInput
                           label="Сумма перевода"
                           value={formData.total}
                           onChange={(value) => setFormData({...formData, total: value})}
@@ -322,11 +324,11 @@ A52351158320990600000200115
                           generatorTooltip="Сгенерировать ID операции"
                         />
                         
-                        <InputWithGenerator
+                        <ReceiptInput
                           label="Номер квитанции"
                           value={formData.receipt_number}
                           onChange={(value) => setFormData({...formData, receipt_number: value})}
-                          placeholder="№ 1-115-078-540-299"
+                          placeholder="1-115-078-540-299"
                           generator={generateReceiptNumber}
                           generatorTooltip="Сгенерировать номер квитанции"
                         />
