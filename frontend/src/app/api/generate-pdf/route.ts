@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Запускаем Python скрипт для генерации PDF
-      const pythonCommand = `cd ${path.dirname(botPath)} && uv run python -c "
+      const pythonCommand = `cd ${path.dirname(botPath)} && source .venv/bin/activate && python -c "
 import sys
 sys.path.append('.')
 from bot import generate_file

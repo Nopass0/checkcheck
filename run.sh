@@ -84,7 +84,14 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 echo -e "\n${BLUE}📦 Установка зависимостей Python...${NC}"
-uv sync --python 3.11
+# Создаем виртуальное окружение и устанавливаем зависимости из requirements.txt
+uv venv --python 3.11
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Ошибка создания виртуального окружения${NC}"
+    exit 1
+fi
+
+uv pip install -r requirements.txt
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Ошибка установки Python зависимостей${NC}"
     exit 1
@@ -102,7 +109,7 @@ echo -e "${GREEN}✅ Frontend зависимости установлены${NC}
 cd ..
 
 echo -e "\n${BLUE}🤖 Запуск Telegram бота...${NC}"
-uv run python bot.py &
+source .venv/bin/activate && python bot.py &
 BOT_PID=$!
 echo -e "${GREEN}✅ Telegram бот запущен (PID: $BOT_PID)${NC}"
 

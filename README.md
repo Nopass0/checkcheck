@@ -21,9 +21,10 @@
    ```
 
 Скрипт автоматически:
-- Установит все зависимости Python через uv
+- Создаст виртуальное окружение Python через uv
+- Установит все зависимости Python из requirements.txt
 - Установит зависимости Frontend через bun
-- Запустит Telegram бота
+- Запустит Telegram бота в виртуальном окружении
 - Запустит веб-приложение на http://localhost:3000
 - Покажет все доступные IP-адреса для доступа к сайту
 - Автоматически откроет браузер (если возможно)
@@ -112,8 +113,7 @@ checkcheck/
 ├── update_cmap.py      # Обновление таблицы символов
 ├── update_xref.py      # Обновление xref таблицы
 ├── ishodnik.pdf        # Шаблон PDF (требуется)
-├── requirements.txt    # Python зависимости (legacy)
-├── pyproject.toml      # Конфигурация uv
+├── requirements.txt    # Python зависимости
 ├── run.sh              # Скрипт запуска
 ├── env.example         # Пример переменных окружения
 └── frontend/           # Next.js приложение
@@ -133,7 +133,8 @@ checkcheck/
 
 ```bash
 # Telegram бот
-uv run python bot.py
+source .venv/bin/activate
+python bot.py
 
 # Frontend (в отдельном терминале)
 cd frontend
@@ -144,7 +145,8 @@ bun run dev
 
 ```bash
 # Python зависимости
-uv sync --python 3.11
+uv venv --python 3.11
+uv pip install -r requirements.txt
 
 # Frontend зависимости
 cd frontend
@@ -168,7 +170,9 @@ bun install
 ### Ошибки установки зависимостей
 ```bash
 # Переустановка Python зависимостей
-uv sync --reinstall
+rm -rf .venv
+uv venv --python 3.11
+uv pip install -r requirements.txt
 
 # Переустановка Frontend зависимостей  
 cd frontend
