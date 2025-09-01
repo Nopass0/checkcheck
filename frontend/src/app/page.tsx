@@ -11,6 +11,7 @@ import { PhoneInput } from '@/components/ui/phone-input'
 import { InputWithGenerator } from '@/components/ui/input-with-generator'
 
 import { ReceiptInput } from '@/components/ui/receipt-input'
+import { RecipientInput } from '@/components/ui/recipient-input'
 import { HistoryPanel } from '@/components/ui/history-panel'
 import { FileText, Download, AlertCircle, CheckCircle, Shuffle, Trash2 } from 'lucide-react'
 import { 
@@ -18,7 +19,8 @@ import {
   generateOperationId, 
   generateReceiptNumber, 
   generateRandomAmount,
-  generateRandomName,
+  generateSenderName,
+  generateRecipientName,
   generateRandomPhone,
   generateRandomBank
 } from '@/lib/generators'
@@ -80,9 +82,9 @@ export default function Home() {
     setFormData({
       date: `${date} ${time}`,
       total: generateRandomAmount(),
-      sender: generateRandomName(),
+      sender: generateSenderName(),
       phone_number: generateRandomPhone(),
-      recipient: generateRandomName(),
+      recipient: generateRecipientName(),
       bank: generateRandomBank(),
       operation_id: generateOperationId(),
       receipt_number: generateReceiptNumber(),
@@ -243,7 +245,7 @@ export default function Home() {
                             placeholder={`Пример:
 01.02.2025 12:23:43
 2000
-Денис А.
+Игорь Васильев
 +7 (985) 535-25-11
 Анна К.
 Тинькофф Банк
@@ -285,9 +287,9 @@ A52351158320990600000200115
                           label="Отправитель"
                           value={formData.sender}
                           onChange={(value) => setFormData({...formData, sender: value})}
-                          placeholder="Денис А."
-                          generator={generateRandomName}
-                          generatorTooltip="Сгенерировать случайное имя"
+                          placeholder="Игорь Васильев"
+                          generator={generateSenderName}
+                          generatorTooltip="Сгенерировать полное имя"
                         />
                         
                         <PhoneInput
@@ -297,13 +299,13 @@ A52351158320990600000200115
                           placeholder="+7 (985) 535-25-11"
                         />
                         
-                        <InputWithGenerator
+                        <RecipientInput
                           label="Получатель"
                           value={formData.recipient}
                           onChange={(value) => setFormData({...formData, recipient: value})}
                           placeholder="Анна К."
-                          generator={generateRandomName}
-                          generatorTooltip="Сгенерировать случайное имя"
+                          generator={generateRecipientName}
+                          generatorTooltip="Сгенерировать имя с инициалом"
                         />
                         
                         <InputWithGenerator
@@ -385,10 +387,11 @@ A52351158320990600000200115
                   <li>• Заполните все 9 полей данными для квитанции</li>
                   <li>• Используйте кнопки <Shuffle className="w-3 h-3 inline" /> для генерации случайных данных</li>
                   <li>• <strong>Сумма:</strong> вводите просто число (2000) - в чеке станет "2 000"</li>
+                  <li>• <strong>Отправитель:</strong> полное имя (Игорь Васильев)</li>
+                  <li>• <strong>Получатель:</strong> имя + инициал (Анна К) - точка добавится автоматически</li>
                   <li>• <strong>Телефон:</strong> автоматически форматируется при вводе</li>
                   <li>• <strong>Дата:</strong> используйте календарь или введите текстом</li>
                   <li>• <strong>История:</strong> все PDF сохраняются справа, можно скачать повторно</li>
-                  <li>• Файлы старше месяца автоматически удаляются</li>
                 </ul>
               </div>
             </div>

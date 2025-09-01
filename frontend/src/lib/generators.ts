@@ -49,14 +49,20 @@ const lastNamePrefixes = [
   'Федоров', 'Морозов', 'Волков', 'Алексеев', 'Лебедев', 'Семенов', 'Егоров', 'Павлов', 'Козлов', 'Степанов'
 ]
 
-export function generateRandomName(): string {
+// Генератор полного имени для отправителя
+export function generateSenderName(): string {
   const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
   const lastName = lastNamePrefixes[Math.floor(Math.random() * lastNamePrefixes.length)]
   
-  // Добавляем инициал отчества
-  const middleInitial = String.fromCharCode(65 + Math.floor(Math.random() * 26)) // A-Z
+  return `${firstName} ${lastName}`
+}
+
+// Генератор имени с инициалом для получателя
+export function generateRecipientName(): string {
+  const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
+  const lastInitial = String.fromCharCode(1040 + Math.floor(Math.random() * 32)) // А-Я
   
-  return `${firstName} ${lastName.charAt(0)}.`
+  return `${firstName} ${lastInitial}.`
 }
 
 export function generateRandomPhone(): string {

@@ -38,7 +38,12 @@ def normalize_text(text):  # приведение текста к единооб
     normalized_text["total"] = total_formatted
     normalized_text["sender"] = text["sender"].strip()
     normalized_text["pfone_number"] = text["pfone_number"].strip()
-    normalized_text["recipient"] = text["recipient"].strip()
+    
+    # Обрабатываем получателя - добавляем точку если ее нет
+    recipient = text["recipient"].strip()
+    if recipient and not recipient.endswith('.'):
+        recipient += '.'
+    normalized_text["recipient"] = recipient
     normalized_text["bank"] = text["bank"].strip()
     normalized_text["operation_id"] = text["operation_id"].strip()[:-5]
     normalized_text["receipt_number"] = text["receipt_number"].strip()
