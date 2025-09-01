@@ -15,10 +15,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   
-  // Отключаем dev overlay в продакшене
-  devIndicators: {
-    appIsrStatus: false,
-    position: 'bottom-right',
+  // Настройки для продакшена (убираем deprecated опции)
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
   },
   
   async headers() {
