@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Путь к Python скрипту бота
+    // Пути к файлам
     const botPath = path.join(process.cwd(), '..', 'bot.py')
     const ishodnikPath = path.join(process.cwd(), '..', 'ishodnik.pdf')
     const outputPath = path.join(process.cwd(), '..', 'nf.pdf')
@@ -109,8 +109,22 @@ export async function POST(request: NextRequest) {
     await fs.writeFile(tempDataFile, formattedData, 'utf-8')
 
     try {
-      // Запускаем Python скрипт для генерации PDF
-      const pythonCommand = `cd ${path.dirname(botPath)} && source .venv/bin/activate && python -c "
+      // Пробуем разные варианты запуска Python
+      const pythonCommands = [
+        // Виртуальное окружение
+        `.venv/bin/python`,
+        // Системный Python
+        `python3`,
+        `python`
+      ]
+      
+      let success = false
+      let lastError = ''
+      const baseDir = path.dirname(botPath)
+      
+      for (const pythonCmd of pythonCommands) {
+        try {
+          const pythonScript = `
 import sys
 sys.path.append('.')
 from bot import generate_file
@@ -120,20 +134,34 @@ with open('temp_data.txt', 'r', encoding='utf-8') as f:
 
 result = generate_file(data)
 if result['status'] == 'error':
-    print(f'ERROR: {result[\"error\"]}')
+    print('ERROR: ' + str(result['error']))
     sys.exit(1)
 else:
     print('SUCCESS')
-"`
+`
+          
+          const { stdout, stderr } = await execAsync(
+            `cd ${baseDir} && ${pythonCmd} -c "${pythonScript.replace(/"/g, '\\"')}"`,
+            { shell: '/bin/bash' }
+          )
+          
+          if (stderr && stderr.includes('ERROR:')) {
+            throw new Error(stderr.replace('ERROR: ', ''))
+          }
 
-      const { stdout, stderr } = await execAsync(pythonCommand)
-      
-      if (stderr && stderr.includes('ERROR:')) {
-        throw new Error(stderr.replace('ERROR: ', ''))
+          if (stdout.includes('SUCCESS')) {
+            success = true
+            break
+          }
+          
+        } catch (error) {
+          lastError = error instanceof Error ? error.message : 'Неизвестная ошибка'
+          continue
+        }
       }
-
-      if (!stdout.includes('SUCCESS')) {
-        throw new Error('Ошибка при генерации PDF')
+      
+      if (!success) {
+        throw new Error(`Не удалось запустить Python: ${lastError}`)
       }
 
       // Читаем сгенерированный PDF

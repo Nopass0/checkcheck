@@ -38,17 +38,28 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# Загружаем переменные окружения
-if [ -f ".env" ]; then
-    export $(cat .env | grep -v '^#' | xargs)
-    echo -e "${GREEN}✅ Переменные окружения загружены${NC}"
-else
+# Настройка переменных окружения
+if [ ! -f ".env" ]; then
     echo -e "${YELLOW}⚠️  .env не найден, создаю из примера...${NC}"
     if [ -f "env.example" ]; then
         cp env.example .env
         echo -e "${GREEN}✅ Файл .env создан${NC}"
+    else
+        # Создаем минимальный .env файл
+        cat > .env << EOF
+# Telegram Bot Token (установите свой токен)
+TELEGRAM_TOKEN=your_telegram_bot_token_here
+
+# Next.js Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8080
+EOF
+        echo -e "${GREEN}✅ Создан базовый .env файл${NC}"
     fi
 fi
+
+# Загружаем переменные окружения
+export $(cat .env | grep -v '^#' | xargs)
+echo -e "${GREEN}✅ Переменные окружения загружены${NC}"
 
 # Полная очистка старых процессов
 echo -e "\n${BLUE}🧹 Очистка старых процессов...${NC}"
@@ -69,16 +80,45 @@ fi
 
 # Устанавливаем Python зависимости
 echo -e "\n${BLUE}📦 Установка Python зависимостей...${NC}"
+
+# Проверяем наличие uv, если нет - устанавливаем
+if ! command -v uv >/dev/null 2>&1; then
+    echo -e "${YELLOW}📥 Установка uv...${NC}"
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+# Создаем виртуальное окружение
 if [ ! -d ".venv" ]; then
     uv venv --python 3.11
 fi
-uv pip install -r requirements.txt
+
+# Устанавливаем зависимости с fallback на pip
+if ! uv pip install -r requirements.txt >/dev/null 2>&1; then
+    echo -e "${YELLOW}⚠️  uv не сработал, пробую pip...${NC}"
+    .venv/bin/pip install -r requirements.txt
+fi
+
 echo -e "${GREEN}✅ Python зависимости установлены${NC}"
 
 # Устанавливаем Frontend зависимости
 echo -e "\n${BLUE}📦 Установка Frontend зависимостей...${NC}"
+
+# Проверяем наличие bun, если нет - устанавливаем
+if ! command -v bun >/dev/null 2>&1; then
+    echo -e "${YELLOW}📥 Установка bun...${NC}"
+    curl -fsSL https://bun.sh/install | bash
+    export PATH="$HOME/.bun/bin:$PATH"
+fi
+
 cd frontend
-bun install
+
+# Устанавливаем зависимости с fallback на npm
+if ! bun install >/dev/null 2>&1; then
+    echo -e "${YELLOW}⚠️  bun не сработал, пробую npm...${NC}"
+    npm install
+fi
+
 echo -e "${GREEN}✅ Frontend зависимости установлены${NC}"
 cd ..
 
