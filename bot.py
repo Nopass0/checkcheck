@@ -1,10 +1,11 @@
 import logging
+import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import replace_text
 
-
-TELEGRAM_TOKEN = ""
+# Загружаем токен из переменной окружения
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 
 start_text = """Данные следует вводить также, как они должны быть представлены в pdf файле, каждый блок с новой строки:
 1. Дата и время
@@ -89,8 +90,11 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 # Основная функция
 def main() -> None:
     """Запускает бота."""
-    # Замените "YOUR_TOKEN" на фактический токен бота
-    application = Application.builder().token("TELEGRAM_TOKEN").build()
+    if not TELEGRAM_TOKEN:
+        print("Ошибка: TELEGRAM_TOKEN не установлен в переменных окружения")
+        return
+    
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # Добавляем обработчики
     application.add_handler(CommandHandler("start", start))
