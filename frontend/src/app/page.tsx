@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { DateTimePicker } from '@/components/ui/datetime-picker'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { InputWithGenerator } from '@/components/ui/input-with-generator'
-import { AmountInput } from '@/components/ui/amount-input'
+
 import { ReceiptInput } from '@/components/ui/receipt-input'
 import { HistoryPanel } from '@/components/ui/history-panel'
 import { FileText, Download, AlertCircle, CheckCircle, Shuffle, Trash2 } from 'lucide-react'
@@ -242,7 +242,7 @@ export default function Home() {
                             onChange={(e) => setTextInput(e.target.value)}
                             placeholder={`Пример:
 01.02.2025 12:23:43
-1 500 
+2000
 Денис А.
 +7 (985) 535-25-11
 Анна К.
@@ -272,11 +272,11 @@ A52351158320990600000200115
                           placeholder="01.02.2025 12:23:43"
                         />
                         
-                        <AmountInput
+                        <InputWithGenerator
                           label="Сумма перевода"
                           value={formData.total}
                           onChange={(value) => setFormData({...formData, total: value})}
-                          placeholder="1 500 "
+                          placeholder="2000"
                           generator={generateRandomAmount}
                           generatorTooltip="Сгенерировать случайную сумму"
                         />
@@ -384,9 +384,10 @@ A52351158320990600000200115
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Заполните все 9 полей данными для квитанции</li>
                   <li>• Используйте кнопки <Shuffle className="w-3 h-3 inline" /> для генерации случайных данных</li>
-                  <li>• Телефон автоматически форматируется при вводе</li>
-                  <li>• Дата и время: используйте календарь или введите текстом</li>
-                  <li>• После генерации PDF сохраняется в истории</li>
+                  <li>• <strong>Сумма:</strong> вводите просто число (2000) - в чеке станет "2 000"</li>
+                  <li>• <strong>Телефон:</strong> автоматически форматируется при вводе</li>
+                  <li>• <strong>Дата:</strong> используйте календарь или введите текстом</li>
+                  <li>• <strong>История:</strong> все PDF сохраняются справа, можно скачать повторно</li>
                   <li>• Файлы старше месяца автоматически удаляются</li>
                 </ul>
               </div>

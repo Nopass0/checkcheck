@@ -33,11 +33,9 @@ export function generateReceiptNumber(): string {
 }
 
 export function generateRandomAmount(): string {
-  // Генерируем случайную сумму от 100 до 99999
+  // Генерируем случайную сумму от 100 до 99999 (простое число без форматирования)
   const amount = Math.floor(Math.random() * 99900) + 100
-  
-  // Форматируем с пробелами между тысячами
-  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' '
+  return amount.toString()
 }
 
 // Список случайных имен

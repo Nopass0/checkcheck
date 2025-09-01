@@ -24,7 +24,18 @@ start_text = """Данные следует вводить также, как о
 def normalize_text(text):  # приведение текста к единообразному виду
     normalized_text = {}
     normalized_text["date"] = text["date"].strip()
-    normalized_text["total"] = text["total"].strip() + " "
+    
+    # Форматируем сумму с пробелами между тысячами
+    total_raw = text["total"].strip().replace(' ', '').replace(',', '.')
+    try:
+        # Преобразуем в число и форматируем
+        total_num = int(float(total_raw))
+        total_formatted = f"{total_num:,}".replace(',', ' ') + " "
+    except (ValueError, TypeError):
+        # Если не удалось преобразовать, оставляем как есть
+        total_formatted = text["total"].strip() + " "
+    
+    normalized_text["total"] = total_formatted
     normalized_text["sender"] = text["sender"].strip()
     normalized_text["pfone_number"] = text["pfone_number"].strip()
     normalized_text["recipient"] = text["recipient"].strip()
