@@ -167,6 +167,24 @@ else:
       // Читаем сгенерированный PDF
       const pdfBuffer = await fs.readFile(outputPath)
 
+      // Сохраняем PDF в папку generated_pdfs с метаданными
+      const timestamp = new Date().toISOString()
+      const filename = `receipt_${Date.now()}.pdf`
+      const savedPdfPath = path.join(process.cwd(), '..', 'generated_pdfs', filename)
+      const metadataPath = path.join(process.cwd(), '..', 'generated_pdfs', `${filename}.json`)
+      
+      // Сохраняем PDF
+      await fs.writeFile(savedPdfPath, pdfBuffer)
+      
+      // Сохраняем метаданные
+      const metadata = {
+        filename,
+        timestamp,
+        data: receiptData,
+        size: pdfBuffer.length
+      }
+      await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2))
+
       // Удаляем временные файлы
       try {
         await fs.unlink(tempDataFile)

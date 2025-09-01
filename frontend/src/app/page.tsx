@@ -6,7 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { FileText, Download, AlertCircle, CheckCircle } from 'lucide-react'
+import { DateTimePicker } from '@/components/ui/datetime-picker'
+import { PhoneInput } from '@/components/ui/phone-input'
+import { InputWithGenerator } from '@/components/ui/input-with-generator'
+import { HistoryPanel } from '@/components/ui/history-panel'
+import { FileText, Download, AlertCircle, CheckCircle, Shuffle, Trash2 } from 'lucide-react'
+import { 
+  generateCardNumber, 
+  generateOperationId, 
+  generateReceiptNumber, 
+  generateRandomAmount,
+  generateRandomName,
+  generateRandomPhone,
+  generateRandomBank
+} from '@/lib/generators'
 
 interface ReceiptData {
   date: string
@@ -37,6 +50,43 @@ export default function Home() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [useTextInput, setUseTextInput] = useState(false)
+
+  // Функция очистки всех полей
+  const clearAllFields = () => {
+    setFormData({
+      date: '',
+      total: '',
+      sender: '',
+      phone_number: '',
+      recipient: '',
+      bank: '',
+      operation_id: '',
+      receipt_number: '',
+      card_number: ''
+    })
+    setTextInput('')
+    setError('')
+    setSuccess(false)
+  }
+
+  // Функция генерации всех случайных данных
+  const generateAllRandomData = () => {
+    const now = new Date()
+    const date = now.toLocaleDateString('ru-RU').replace(/\//g, '.')
+    const time = now.toLocaleTimeString('ru-RU', { hour12: false })
+    
+    setFormData({
+      date: `${date} ${time}`,
+      total: generateRandomAmount(),
+      sender: generateRandomName(),
+      phone_number: generateRandomPhone(),
+      recipient: generateRandomName(),
+      bank: generateRandomBank(),
+      operation_id: generateOperationId(),
+      receipt_number: generateReceiptNumber(),
+      card_number: generateCardNumber()
+    })
+  }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,6 +124,12 @@ export default function Home() {
       window.URL.revokeObjectURL(url)
 
       setSuccess(true)
+      
+      // Очищаем поля после успешного скачивания
+      setTimeout(() => {
+        clearAllFields()
+      }, 3000) // Показываем сообщение об успехе 3 секунды, затем очищаем
+      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка')
     } finally {
@@ -101,10 +157,16 @@ export default function Home() {
     }
   }
 
+  // Обработчик выбора данных из истории
+  const handleHistorySelect = (data: ReceiptData) => {
+    setFormData(data)
+    setUseTextInput(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
       <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
             <FileText className="w-16 h-16 text-blue-600 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -115,214 +177,223 @@ export default function Home() {
             </p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Данные для квитанции</CardTitle>
-              <CardDescription>
-                Заполните все поля или введите данные в текстовом формате
-              </CardDescription>
-              
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={!useTextInput ? "default" : "outline"}
-                  onClick={() => setUseTextInput(false)}
-                  size="sm"
-                >
-                  Форма
-                </Button>
-                <Button
-                  type="button"
-                  variant={useTextInput ? "default" : "outline"}
-                  onClick={() => setUseTextInput(true)}
-                  size="sm"
-                >
-                  Текст
-                </Button>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                {useTextInput ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="textInput">
-                        Введите данные (9 строк):
-                      </Label>
-                      <Textarea
-                        id="textInput"
-                        value={textInput}
-                        onChange={(e) => setTextInput(e.target.value)}
-                        placeholder={`Пример:
-01.01.2024 12:00
-1 000 
-Иван Иванов
-+7 900 123 45 67
-Петр Петров
-Тинькофф Банк
-123456789
-987654321
-1234567890123456`}
-                        className="min-h-[200px] font-mono text-sm"
-                        required
-                      />
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Основная форма */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Данные для квитанции</CardTitle>
+                  <CardDescription>
+                    Заполните все поля или введите данные в текстовом формате
+                  </CardDescription>
+                  
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
-                      onClick={parseTextInput}
-                      variant="outline"
-                      className="w-full"
+                      variant={!useTextInput ? "default" : "outline"}
+                      onClick={() => setUseTextInput(false)}
+                      size="sm"
                     >
-                      Заполнить форму из текста
+                      Форма
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={useTextInput ? "default" : "outline"}
+                      onClick={() => setUseTextInput(true)}
+                      size="sm"
+                    >
+                      Текст
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={generateAllRandomData}
+                      size="sm"
+                      className="ml-auto"
+                    >
+                      <Shuffle className="w-4 h-4 mr-2" />
+                      Случайные данные
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={clearAllFields}
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Очистить
                     </Button>
                   </div>
-                ) : (
-                  <div className="grid gap-4">
-                    <div>
-                      <Label htmlFor="date">Дата и время</Label>
-                      <Input
-                        id="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({...formData, date: e.target.value})}
-                        placeholder="01.01.2024 12:00"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="total">Сумма перевода</Label>
-                      <Input
-                        id="total"
-                        value={formData.total}
-                        onChange={(e) => setFormData({...formData, total: e.target.value})}
-                        placeholder="1 000 "
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="sender">Отправитель</Label>
-                      <Input
-                        id="sender"
-                        value={formData.sender}
-                        onChange={(e) => setFormData({...formData, sender: e.target.value})}
-                        placeholder="Иван Иванов"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="phone_number">Номер телефона</Label>
-                      <Input
-                        id="phone_number"
-                        value={formData.phone_number}
-                        onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
-                        placeholder="+7 900 123 45 67"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="recipient">Получатель</Label>
-                      <Input
-                        id="recipient"
-                        value={formData.recipient}
-                        onChange={(e) => setFormData({...formData, recipient: e.target.value})}
-                        placeholder="Петр Петров"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="bank">Банк</Label>
-                      <Input
-                        id="bank"
-                        value={formData.bank}
-                        onChange={(e) => setFormData({...formData, bank: e.target.value})}
-                        placeholder="Тинькофф Банк"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="operation_id">Идентификатор операции</Label>
-                      <Input
-                        id="operation_id"
-                        value={formData.operation_id}
-                        onChange={(e) => setFormData({...formData, operation_id: e.target.value})}
-                        placeholder="123456789"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="receipt_number">Номер квитации</Label>
-                      <Input
-                        id="receipt_number"
-                        value={formData.receipt_number}
-                        onChange={(e) => setFormData({...formData, receipt_number: e.target.value})}
-                        placeholder="987654321"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="card_number">Счет списания</Label>
-                      <Input
-                        id="card_number"
-                        value={formData.card_number}
-                        onChange={(e) => setFormData({...formData, card_number: e.target.value})}
-                        placeholder="1234567890123456"
-                        required
-                      />
-                    </div>
-                  </div>
-                )}
+                </CardHeader>
+                
+                <CardContent>
+                  <form onSubmit={handleFormSubmit} className="space-y-4">
+                    {useTextInput ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="textInput">
+                            Введите данные (9 строк):
+                          </Label>
+                          <Textarea
+                            id="textInput"
+                            value={textInput}
+                            onChange={(e) => setTextInput(e.target.value)}
+                            placeholder={`Пример:
+01.02.2025 12:23:43
+1 500 
+Денис А.
++7 (985) 535-25-11
+Анна К.
+Тинькофф Банк
+A52351158320990600000200115
+№ 1-115-078-540-299
+408178102000****7022`}
+                            className="min-h-[250px] font-mono text-sm"
+                            required
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={parseTextInput}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Заполнить форму из текста
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid gap-4">
+                        <DateTimePicker
+                          label="Дата и время"
+                          value={formData.date}
+                          onChange={(value) => setFormData({...formData, date: value})}
+                          placeholder="01.02.2025 12:23:43"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Сумма перевода"
+                          value={formData.total}
+                          onChange={(value) => setFormData({...formData, total: value})}
+                          placeholder="1 500 "
+                          generator={generateRandomAmount}
+                          generatorTooltip="Сгенерировать случайную сумму"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Отправитель"
+                          value={formData.sender}
+                          onChange={(value) => setFormData({...formData, sender: value})}
+                          placeholder="Денис А."
+                          generator={generateRandomName}
+                          generatorTooltip="Сгенерировать случайное имя"
+                        />
+                        
+                        <PhoneInput
+                          label="Номер телефона"
+                          value={formData.phone_number}
+                          onChange={(value) => setFormData({...formData, phone_number: value})}
+                          placeholder="+7 (985) 535-25-11"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Получатель"
+                          value={formData.recipient}
+                          onChange={(value) => setFormData({...formData, recipient: value})}
+                          placeholder="Анна К."
+                          generator={generateRandomName}
+                          generatorTooltip="Сгенерировать случайное имя"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Банк"
+                          value={formData.bank}
+                          onChange={(value) => setFormData({...formData, bank: value})}
+                          placeholder="Тинькофф Банк"
+                          generator={generateRandomBank}
+                          generatorTooltip="Выбрать случайный банк"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Идентификатор операции"
+                          value={formData.operation_id}
+                          onChange={(value) => setFormData({...formData, operation_id: value})}
+                          placeholder="A52351158320990600000200115"
+                          generator={generateOperationId}
+                          generatorTooltip="Сгенерировать ID операции"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Номер квитанции"
+                          value={formData.receipt_number}
+                          onChange={(value) => setFormData({...formData, receipt_number: value})}
+                          placeholder="№ 1-115-078-540-299"
+                          generator={generateReceiptNumber}
+                          generatorTooltip="Сгенерировать номер квитанции"
+                        />
+                        
+                        <InputWithGenerator
+                          label="Счет списания"
+                          value={formData.card_number}
+                          onChange={(value) => setFormData({...formData, card_number: value})}
+                          placeholder="408178102000****7022"
+                          generator={generateCardNumber}
+                          generatorTooltip="Сгенерировать номер карты"
+                        />
+                      </div>
+                    )}
 
-                {error && (
-                  <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                    <AlertCircle className="w-5 h-5" />
-                    <span>{error}</span>
-                  </div>
-                )}
+                    {error && (
+                      <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <AlertCircle className="w-5 h-5" />
+                        <span>{error}</span>
+                      </div>
+                    )}
 
-                {success && (
-                  <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                    <CheckCircle className="w-5 h-5" />
-                    <span>PDF успешно сгенерирован и скачан!</span>
-                  </div>
-                )}
+                    {success && (
+                      <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+                        <CheckCircle className="w-5 h-5" />
+                        <span>PDF успешно сгенерирован и скачан! Поля будут очищены через 3 секунды.</span>
+                      </div>
+                    )}
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Генерация PDF...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Download className="w-4 h-4" />
-                      Сгенерировать PDF
-                    </span>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Генерация PDF...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <Download className="w-4 h-4" />
+                          Сгенерировать PDF
+                        </span>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
 
-          <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-blue-900 mb-2">Инструкция:</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Заполните все 9 полей данными для квитанции</li>
-              <li>• Или используйте текстовый формат (каждое поле с новой строки)</li>
-              <li>• Сумма должна содержать пробел между тысячами (например: "1 000")</li>
-              <li>• После генерации PDF автоматически скачается</li>
-            </ul>
+              <div className="mt-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-blue-900 mb-2">Инструкция:</h3>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Заполните все 9 полей данными для квитанции</li>
+                  <li>• Используйте кнопки <Shuffle className="w-3 h-3 inline" /> для генерации случайных данных</li>
+                  <li>• Телефон автоматически форматируется при вводе</li>
+                  <li>• Дата и время: используйте календарь или введите текстом</li>
+                  <li>• После генерации PDF сохраняется в истории</li>
+                  <li>• Файлы старше месяца автоматически удаляются</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Панель истории */}
+            <div className="lg:col-span-1">
+              <HistoryPanel onDataSelect={handleHistorySelect} />
+            </div>
           </div>
         </div>
       </div>
