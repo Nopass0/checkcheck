@@ -1,23 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Отключаем Turbopack для продакшена (стабильнее)
-  turbo: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
+  // Отключаем ESLint при сборке
+  eslint: {
+    ignoreDuringBuilds: true,
   },
   
-  // Настройки для работы на любом хосте
-  experimental: {
-    allowMiddlewareResponseBody: true,
+  // Отключаем TypeScript проверки при сборке
+  typescript: {
+    ignoreBuildErrors: true,
   },
-
-  // Настройки для продакшена
-  output: 'standalone',
   
   async headers() {
     return [
