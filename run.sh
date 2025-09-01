@@ -115,7 +115,7 @@ echo -e "${GREEN}✅ Telegram бот запущен (PID: $BOT_PID)${NC}"
 
 echo -e "\n${BLUE}🌐 Запуск Frontend...${NC}"
 cd frontend
-bun run dev &
+PORT=6060 bun run dev &
 FRONTEND_PID=$!
 echo -e "${GREEN}✅ Frontend запущен (PID: $FRONTEND_PID)${NC}"
 cd ..
@@ -134,7 +134,7 @@ check_service() {
     local max_attempts=10
     local attempt=1
     while [ $attempt -le $max_attempts ]; do
-        if curl -s http://localhost:3000 >/dev/null 2>&1; then
+        if curl -s http://localhost:6060 >/dev/null 2>&1; then
             return 0
         fi
         sleep 1
@@ -154,27 +154,27 @@ echo "================================================="
 echo -e "${BLUE}📱 Telegram бот: ${GREEN}работает${NC}"
 echo -e "${BLUE}🌐 Веб-приложение: ${SERVICE_STATUS}${NC}"
 echo -e "\n${BLUE}🔗 Доступные ссылки:${NC}"
-echo -e "${GREEN}   ✓ Локально:      ${BLUE}http://localhost:3000${NC}"
-echo -e "${GREEN}   ✓ В локальной сети: ${BLUE}http://${LOCAL_IP}:3000${NC}"
+echo -e "${GREEN}   ✓ Локально:      ${BLUE}http://localhost:6060${NC}"
+echo -e "${GREEN}   ✓ В локальной сети: ${BLUE}http://${LOCAL_IP}:6060${NC}"
 
 if [ "$PUBLIC_IP" != "недоступен" ]; then
-    echo -e "${GREEN}   ✓ Публичный доступ: ${BLUE}http://${PUBLIC_IP}:3000${NC}"
-    echo -e "${YELLOW}     ⚠️  Убедитесь, что порт 3000 открыт в файерволе${NC}"
+    echo -e "${GREEN}   ✓ Публичный доступ: ${BLUE}http://${PUBLIC_IP}:6060${NC}"
+    echo -e "${YELLOW}     ⚠️  Убедитесь, что порт 6060 открыт в файерволе${NC}"
 else
     echo -e "${YELLOW}   ⚠️  Публичный IP: недоступен${NC}"
 fi
 
 echo "================================================="
-echo -e "${GREEN}🚀 Для продакшена используйте: ${BLUE}http://${LOCAL_IP}:3000${NC}"
+echo -e "${GREEN}🚀 Для продакшена используйте: ${BLUE}http://${LOCAL_IP}:6060${NC}"
 echo -e "${YELLOW}💡 Нажмите Ctrl+C для остановки всех сервисов${NC}"
 
 # Опционально открыть браузер (если запущено в интерактивном режиме)
 if [ -t 1 ] && command -v xdg-open >/dev/null 2>&1; then
     echo -e "\n${BLUE}🌐 Открываю браузер...${NC}"
-    xdg-open "http://localhost:3000" >/dev/null 2>&1 &
+    xdg-open "http://localhost:6060" >/dev/null 2>&1 &
 elif [ -t 1 ] && command -v open >/dev/null 2>&1; then
     echo -e "\n${BLUE}🌐 Открываю браузер...${NC}"
-    open "http://localhost:3000" >/dev/null 2>&1 &
+    open "http://localhost:6060" >/dev/null 2>&1 &
 fi
 
 # Ждем завершения процессов
