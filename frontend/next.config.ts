@@ -10,6 +10,16 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // Настройки для продакшена
+  poweredByHeader: false,
+  compress: true,
+  
+  // Отключаем dev overlay в продакшене
+  devIndicators: {
+    appIsrStatus: false,
+    position: 'bottom-right',
+  },
   
   async headers() {
     return [
