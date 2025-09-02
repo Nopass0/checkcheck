@@ -9,16 +9,14 @@ export function generateCardNumber(): string {
 }
 
 export function generateOperationId(): string {
-  // Генерируем ID операции в формате A52351158320990600000200115
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  const letter = letters[Math.floor(Math.random() * letters.length)]
+  // Генерируем ID операции в формате A52351158320990600000200115 (26 символов, всегда начинается с A)
   
-  // Генерируем 24 цифры
-  const numbers = Array.from({ length: 24 }, () => 
+  // Генерируем 25 цифр (A + 25 цифр = 26 символов всего)
+  const numbers = Array.from({ length: 25 }, () => 
     Math.floor(Math.random() * 10)
   ).join('')
   
-  return `${letter}${numbers}`
+  return `A${numbers}`
 }
 
 export function generateReceiptNumber(): string {
