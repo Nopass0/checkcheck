@@ -321,7 +321,7 @@ A52351158320990600000200115
                           label="Идентификатор операции"
                           value={formData.operation_id}
                           onChange={(value) => setFormData({...formData, operation_id: value})}
-                          placeholder="A523511583209906000002001157"
+                          placeholder="B52311723304650W00001500115"
                           generator={generateOperationId}
                           generatorTooltip="Сгенерировать ID операции"
                         />
