@@ -18,7 +18,7 @@ interface ReceiptInputProps {
 export function ReceiptInput({ 
   value, 
   onChange, 
-  placeholder = "1-115-078-540-299", 
+  placeholder = "1-116-073-699-966", 
   label,
   generator,
   generatorTooltip = "Сгенерировать номер квитанции"

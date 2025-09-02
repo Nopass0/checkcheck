@@ -1,42 +1,24 @@
 // Генераторы случайных данных
 
 export function generateCardNumber(): string {
-  // Генерируем номер карты в формате 408178102000****7022
-  const prefix = "408178102000"
-  const suffix = "7022"
+  // Генерируем номер карты в формате 408178102000****XXXX (меняются только последние 4 цифры)
+  const lastFourDigits = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
   const middle = Array.from({ length: 4 }, () => '*').join('')
-  return `${prefix}${middle}${suffix}`
+  return `408178102000${middle}${lastFourDigits}`
 }
 
 export function generateOperationId(): string {
-  // Генерируем ID операции в формате B52311723304650W00001500115 (26 символов, буква в начале и середине)
+  // Генерируем ID операции в формате B52311723304650W0000XX (меняются только последние 2 цифры)
+  const lastTwoDigits = Math.floor(Math.random() * 100).toString().padStart(2, '0')
   
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  const firstLetter = letters[Math.floor(Math.random() * letters.length)]
-  const middleLetter = letters[Math.floor(Math.random() * letters.length)]
-  
-  // Генерируем первую часть цифр (14 цифр)
-  const firstPart = Array.from({ length: 14 }, () => 
-    Math.floor(Math.random() * 10)
-  ).join('')
-  
-  // Генерируем вторую часть цифр (11 цифр)
-  const secondPart = Array.from({ length: 11 }, () => 
-    Math.floor(Math.random() * 10)
-  ).join('')
-  
-  return `${firstLetter}${firstPart}${middleLetter}${secondPart}`
+  return `B52311723304650W0000${lastTwoDigits}`
 }
 
 export function generateReceiptNumber(): string {
-  // Генерируем номер квитанции в формате 1-115-078-540-299 (без знака №)
-  const part1 = Math.floor(Math.random() * 9) + 1 // 1-9
-  const part2 = Math.floor(Math.random() * 900) + 100 // 100-999
-  const part3 = Math.floor(Math.random() * 900) + 100 // 100-999
-  const part4 = Math.floor(Math.random() * 900) + 100 // 100-999
-  const part5 = Math.floor(Math.random() * 900) + 100 // 100-999
+  // Генерируем номер квитанции в формате 1-116-073-699-9XX (меняются только последние 2 цифры)
+  const lastTwoDigits = Math.floor(Math.random() * 100).toString().padStart(2, '0')
   
-  return `${part1}-${part2}-${part3}-${part4}-${part5}`
+  return `1-116-073-699-9${lastTwoDigits}`
 }
 
 export function generateRandomAmount(): string {
