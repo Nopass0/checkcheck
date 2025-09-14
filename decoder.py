@@ -26,6 +26,7 @@ def extract_flate_stream(pdf_path, stream_number=1):  # Извлекает и д
         return zlib.decompress(stream_data)
 
     except Exception as ex:
+        print(ex)
         raise RuntimeError(f"Ошибка при обработке PDF: {ex}")
 
 
@@ -113,4 +114,5 @@ def replace_pdf_stream_advanced(input_pdf, output_pdf, new_text, stream_number=1
         return length_difference
 
     except Exception as e:
+        print(ex)
         raise RuntimeError(f"Ошибка при обработке PDF: {e}")

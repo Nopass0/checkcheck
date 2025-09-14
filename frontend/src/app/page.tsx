@@ -26,6 +26,7 @@ import {
 } from '@/lib/generators'
 
 interface ReceiptData {
+  from_bank?: string
   date: string
   total: string
   sender: string
@@ -39,6 +40,7 @@ interface ReceiptData {
 
 export default function Home() {
   const [formData, setFormData] = useState<ReceiptData>({
+    from_bank: 'т банк',
     date: '',
     total: '',
     sender: '',
@@ -58,6 +60,7 @@ export default function Home() {
   // Функция очистки всех полей
   const clearAllFields = () => {
     setFormData({
+      from_bank: 'т банк',
       date: '',
       total: '',
       sender: '',
@@ -78,18 +81,19 @@ export default function Home() {
     const now = new Date()
     const date = now.toLocaleDateString('ru-RU').replace(/\//g, '.')
     const time = now.toLocaleTimeString('ru-RU', { hour12: false })
-    
-    setFormData({
+
+    setFormData(prev => ({
+      ...prev,
       date: `${date} ${time}`,
       total: generateRandomAmount(),
-      sender: generateSenderName(),
+      sender: prev.from_bank === 'альфа' ? '' : generateSenderName(),
       phone_number: generateRandomPhone(),
       recipient: generateRecipientName(),
       bank: generateRandomBank(),
       operation_id: generateOperationId(),
       receipt_number: generateReceiptNumber(),
       card_number: generateCardNumber()
-    })
+    }))
   }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -143,21 +147,67 @@ export default function Home() {
 
   const parseTextInput = () => {
     const lines = textInput.trim().split('\n')
-    if (lines.length === 9) {
-      setFormData({
-        date: lines[0],
-        total: lines[1],
-        sender: lines[2],
-        phone_number: lines[3],
-        recipient: lines[4],
-        bank: lines[5],
-        operation_id: lines[6],
-        receipt_number: lines[7],
-        card_number: lines[8]
-      })
+    const firstLine = lines[0].toLowerCase().trim()
+    const hasFromBank = firstLine === 'т банк' || firstLine === 'альфа'
+
+    if (hasFromBank) {
+      const fromBank = firstLine
+      if (fromBank === 'т банк' && lines.length !== 10) {
+        setError('Для Т Банка должно быть 10 строк данных')
+        return
+      }
+      if (fromBank === 'альфа' && lines.length !== 9) {
+        setError('Для Альфа Банка должно быть 9 строк данных')
+        return
+      }
+
+      if (fromBank === 'т банк') {
+        setFormData({
+          from_bank: fromBank,
+          date: lines[1],
+          total: lines[2],
+          sender: lines[3],
+          phone_number: lines[4],
+          recipient: lines[5],
+          bank: lines[6],
+          operation_id: lines[7],
+          receipt_number: lines[8],
+          card_number: lines[9]
+        })
+      } else {
+        setFormData({
+          from_bank: fromBank,
+          date: lines[1],
+          total: lines[2],
+          sender: '',
+          phone_number: lines[3],
+          recipient: lines[4],
+          bank: lines[5],
+          operation_id: lines[6],
+          receipt_number: lines[7],
+          card_number: lines[8]
+        })
+      }
       setUseTextInput(false)
     } else {
-      setError('Должно быть ровно 9 строк данных')
+      // Обратная совместимость - если банк не указан, считаем что это Т Банк
+      if (lines.length === 9) {
+        setFormData({
+          from_bank: 'т банк',
+          date: lines[0],
+          total: lines[1],
+          sender: lines[2],
+          phone_number: lines[3],
+          recipient: lines[4],
+          bank: lines[5],
+          operation_id: lines[6],
+          receipt_number: lines[7],
+          card_number: lines[8]
+        })
+        setUseTextInput(false)
+      } else {
+        setError('Должно быть 9 строк данных (или укажите банк отправителя первой строкой)')
+      }
     }
   }
 
@@ -236,16 +286,28 @@ export default function Home() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="textInput">
-                            Введите данные (9 строк):
+                            Введите данные:
                           </Label>
                           <Textarea
                             id="textInput"
                             value={textInput}
                             onChange={(e) => setTextInput(e.target.value)}
-                            placeholder={`Пример:
+                            placeholder={`Пример для Т Банка (10 строк):
+т банк
 01.02.2025 12:23:43
 2000
 Игорь Васильев
++7 (985) 535-25-11
+Анна К.
+Тинькофф Банк
+A52351158320990600000200115
+1-115-078-540-299
+408178102000****7022
+
+Пример для Альфа Банка (9 строк):
+альфа
+01.02.2025 12:23:43
+2000
 +7 (985) 535-25-11
 Анна К.
 Тинькофф Банк
@@ -267,6 +329,26 @@ A52351158320990600000200115
                       </div>
                     ) : (
                       <div className="grid gap-4">
+                        <div>
+                          <Label htmlFor="from_bank">Банк отправителя</Label>
+                          <select
+                            id="from_bank"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            value={formData.from_bank || 'т банк'}
+                            onChange={(e) => {
+                              const newFromBank = e.target.value
+                              setFormData({
+                                ...formData,
+                                from_bank: newFromBank,
+                                sender: newFromBank === 'альфа' ? '' : formData.sender
+                              })
+                            }}
+                          >
+                            <option value="т банк">Т Банк</option>
+                            <option value="альфа">Альфа Банк</option>
+                          </select>
+                        </div>
+
                         <DateTimePicker
                           label="Дата и время"
                           value={formData.date}
@@ -282,15 +364,17 @@ A52351158320990600000200115
                           generator={generateRandomAmount}
                           generatorTooltip="Сгенерировать случайную сумму"
                         />
-                        
-                        <InputWithGenerator
-                          label="Отправитель"
-                          value={formData.sender}
-                          onChange={(value) => setFormData({...formData, sender: value})}
-                          placeholder="Игорь Васильев"
-                          generator={generateSenderName}
-                          generatorTooltip="Сгенерировать полное имя"
-                        />
+
+                        {formData.from_bank !== 'альфа' && (
+                          <InputWithGenerator
+                            label="Отправитель"
+                            value={formData.sender}
+                            onChange={(value) => setFormData({...formData, sender: value})}
+                            placeholder="Игорь Васильев"
+                            generator={generateSenderName}
+                            generatorTooltip="Сгенерировать полное имя"
+                          />
+                        )}
                         
                         <PhoneInput
                           label="Номер телефона"

@@ -7,9 +7,10 @@ import path from 'path'
 const execAsync = promisify(exec)
 
 interface ReceiptData {
+  from_bank?: string
   date: string
   total: string
-  sender: string
+  sender?: string
   phone_number: string
   recipient: string
   bank: string
@@ -24,35 +25,86 @@ interface TextInput {
 
 function parseTextInput(text: string): ReceiptData {
   const lines = text.trim().split('\n')
-  if (lines.length !== 9) {
-    throw new Error('Должно быть ровно 9 строк данных')
-  }
 
-  return {
-    date: lines[0],
-    total: lines[1],
-    sender: lines[2],
-    phone_number: lines[3],
-    recipient: lines[4],
-    bank: lines[5],
-    operation_id: lines[6],
-    receipt_number: lines[7],
-    card_number: lines[8]
+  // Проверяем, есть ли указание банка отправителя в первой строке
+  const firstLine = lines[0].toLowerCase().trim()
+  const hasFromBank = firstLine === 'т банк' || firstLine === 'альфа'
+
+  if (hasFromBank) {
+    const fromBank = firstLine
+    if (fromBank === 'т банк' && lines.length !== 10) {
+      throw new Error('Для Т Банка должно быть 10 строк данных')
+    }
+    if (fromBank === 'альфа' && lines.length !== 9) {
+      throw new Error('Для Альфа Банка должно быть 9 строк данных')
+    }
+
+    if (fromBank === 'т банк') {
+      return {
+        from_bank: fromBank,
+        date: lines[1],
+        total: lines[2],
+        sender: lines[3],
+        phone_number: lines[4],
+        recipient: lines[5],
+        bank: lines[6],
+        operation_id: lines[7],
+        receipt_number: lines[8],
+        card_number: lines[9]
+      }
+    } else {
+      return {
+        from_bank: fromBank,
+        date: lines[1],
+        total: lines[2],
+        phone_number: lines[3],
+        recipient: lines[4],
+        bank: lines[5],
+        operation_id: lines[6],
+        receipt_number: lines[7],
+        card_number: lines[8]
+      }
+    }
+  } else {
+    // Обратная совместимость - если банк не указан, считаем что это Т Банк
+    if (lines.length !== 9) {
+      throw new Error('Должно быть ровно 9 строк данных')
+    }
+    return {
+      from_bank: 'т банк',
+      date: lines[0],
+      total: lines[1],
+      sender: lines[2],
+      phone_number: lines[3],
+      recipient: lines[4],
+      bank: lines[5],
+      operation_id: lines[6],
+      receipt_number: lines[7],
+      card_number: lines[8]
+    }
   }
 }
 
 function formatDataForBot(data: ReceiptData): string {
-  return [
-    data.date,
-    data.total,
-    data.sender,
-    data.phone_number,
-    data.recipient,
-    data.bank,
-    data.operation_id,
-    data.receipt_number,
-    data.card_number
-  ].join('\n')
+  const fromBank = data.from_bank || 'т банк'
+  const lines = [fromBank]
+
+  lines.push(data.date)
+  lines.push(data.total)
+
+  // Для Т Банка добавляем отправителя
+  if (fromBank === 'т банк') {
+    lines.push(data.sender || '')
+  }
+
+  lines.push(data.phone_number)
+  lines.push(data.recipient)
+  lines.push(data.bank)
+  lines.push(data.operation_id)
+  lines.push(data.receipt_number)
+  lines.push(data.card_number)
+
+  return lines.join('\n')
 }
 
 export async function POST(request: NextRequest) {
@@ -75,7 +127,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Валидация данных
-    const requiredFields = ['date', 'total', 'sender', 'phone_number', 'recipient', 'bank', 'operation_id', 'receipt_number', 'card_number']
+    const fromBank = receiptData.from_bank || 'т банк'
+    const requiredFields = ['date', 'total', 'phone_number', 'recipient', 'bank', 'operation_id', 'receipt_number', 'card_number']
+
+    // Для Т Банка отправитель обязателен
+    if (fromBank === 'т банк') {
+      requiredFields.push('sender')
+    }
+
     for (const field of requiredFields) {
       if (!receiptData[field as keyof ReceiptData]) {
         return NextResponse.json(
