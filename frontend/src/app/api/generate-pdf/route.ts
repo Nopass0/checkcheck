@@ -17,6 +17,7 @@ interface ReceiptData {
   operation_id: string
   receipt_number: string
   card_number: string
+  message?: string
 }
 
 interface TextInput {
@@ -62,7 +63,8 @@ function parseTextInput(text: string): ReceiptData {
         bank: lines[5],
         operation_id: lines[6],
         receipt_number: lines[7],
-        card_number: lines[8]
+        card_number: lines[8],
+        message: 'Перевод денежных средств'
       }
     }
   } else {
@@ -103,6 +105,11 @@ function formatDataForBot(data: ReceiptData): string {
   lines.push(data.operation_id)
   lines.push(data.receipt_number)
   lines.push(data.card_number)
+
+  // Для Альфа Банка добавляем сообщение
+  if (fromBank === 'альфа') {
+    lines.push(data.message || 'Перевод денежных средств')
+  }
 
   return lines.join('\n')
 }

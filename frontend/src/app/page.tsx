@@ -36,6 +36,7 @@ interface ReceiptData {
   operation_id: string
   receipt_number: string
   card_number: string
+  message?: string
 }
 
 export default function Home() {
@@ -49,7 +50,8 @@ export default function Home() {
     bank: '',
     operation_id: '',
     receipt_number: '',
-    card_number: ''
+    card_number: '',
+    message: ''
   })
   const [textInput, setTextInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -69,7 +71,8 @@ export default function Home() {
       bank: '',
       operation_id: '',
       receipt_number: '',
-      card_number: ''
+      card_number: '',
+      message: ''
     })
     setTextInput('')
     setError('')
@@ -81,18 +84,20 @@ export default function Home() {
     const now = new Date()
     const date = now.toLocaleDateString('ru-RU').replace(/\//g, '.')
     const time = now.toLocaleTimeString('ru-RU', { hour12: false })
+    const isAlfa = formData.from_bank === 'альфа'
 
     setFormData(prev => ({
       ...prev,
       date: `${date} ${time}`,
-      total: generateRandomAmount(),
-      sender: prev.from_bank === 'альфа' ? '' : generateSenderName(),
+      total: generateRandomAmount(isAlfa),
+      sender: isAlfa ? '' : generateSenderName(),
       phone_number: generateRandomPhone(),
-      recipient: generateRecipientName(),
+      recipient: generateRecipientName(isAlfa),
       bank: generateRandomBank(),
-      operation_id: generateOperationId(),
-      receipt_number: generateReceiptNumber(),
-      card_number: generateCardNumber()
+      operation_id: generateOperationId(isAlfa),
+      receipt_number: generateReceiptNumber(isAlfa),
+      card_number: generateCardNumber(isAlfa),
+      message: isAlfa ? 'Перевод денежных средств' : ''
     }))
   }
 
@@ -185,7 +190,8 @@ export default function Home() {
           bank: lines[5],
           operation_id: lines[6],
           receipt_number: lines[7],
-          card_number: lines[8]
+          card_number: lines[8],
+          message: 'Перевод денежных средств'
         })
       }
       setUseTextInput(false)
@@ -360,8 +366,8 @@ A52351158320990600000200115
                           label="Сумма перевода"
                           value={formData.total}
                           onChange={(value) => setFormData({...formData, total: value})}
-                          placeholder="2000"
-                          generator={generateRandomAmount}
+                          placeholder={formData.from_bank === 'альфа' ? "14 900" : "2000"}
+                          generator={() => generateRandomAmount(formData.from_bank === 'альфа')}
                           generatorTooltip="Сгенерировать случайную сумму"
                         />
 
@@ -387,9 +393,9 @@ A52351158320990600000200115
                           label="Получатель"
                           value={formData.recipient}
                           onChange={(value) => setFormData({...formData, recipient: value})}
-                          placeholder="Анна К."
-                          generator={generateRecipientName}
-                          generatorTooltip="Сгенерировать имя с инициалом"
+                          placeholder={formData.from_bank === 'альфа' ? "Ильман Тагирович Д" : "Анна К."}
+                          generator={() => generateRecipientName(formData.from_bank === 'альфа')}
+                          generatorTooltip={formData.from_bank === 'альфа' ? "Сгенерировать ФИО" : "Сгенерировать имя с инициалом"}
                         />
                         
                         <InputWithGenerator
@@ -402,31 +408,43 @@ A52351158320990600000200115
                         />
                         
                         <InputWithGenerator
-                          label="Идентификатор операции"
+                          label={formData.from_bank === 'альфа' ? "Идентификатор операции в СБП" : "Идентификатор операции"}
                           value={formData.operation_id}
                           onChange={(value) => setFormData({...formData, operation_id: value})}
-                          placeholder="B52311723304650W000015"
-                          generator={generateOperationId}
+                          placeholder={formData.from_bank === 'альфа' ? "B52231829434200O0000120011570301" : "B52311723304650W000015"}
+                          generator={() => generateOperationId(formData.from_bank === 'альфа')}
                           generatorTooltip="Сгенерировать ID операции"
                         />
                         
                         <ReceiptInput
-                          label="Номер квитанции"
+                          label={formData.from_bank === 'альфа' ? "Номер операции" : "Номер квитанции"}
                           value={formData.receipt_number}
                           onChange={(value) => setFormData({...formData, receipt_number: value})}
-                          placeholder="1-115-078-540-299"
-                          generator={generateReceiptNumber}
-                          generatorTooltip="Сгенерировать номер квитанции"
+                          placeholder={formData.from_bank === 'альфа' ? "C421108251242265" : "1-115-078-540-299"}
+                          generator={() => generateReceiptNumber(formData.from_bank === 'альфа')}
+                          generatorTooltip={formData.from_bank === 'альфа' ? "Сгенерировать номер операции" : "Сгенерировать номер квитанции"}
                         />
                         
                         <InputWithGenerator
-                          label="Счет списания"
+                          label="Счёт списания"
                           value={formData.card_number}
                           onChange={(value) => setFormData({...formData, card_number: value})}
-                          placeholder="408178102000****7022"
-                          generator={generateCardNumber}
-                          generatorTooltip="Сгенерировать номер карты"
+                          placeholder={formData.from_bank === 'альфа' ? "40817810805600376229" : "408178102000****7022"}
+                          generator={() => generateCardNumber(formData.from_bank === 'альфа')}
+                          generatorTooltip="Сгенерировать номер счета"
                         />
+
+                        {formData.from_bank === 'альфа' && (
+                          <div>
+                            <Label htmlFor="message">Сообщение получателю</Label>
+                            <Input
+                              id="message"
+                              value={formData.message || 'Перевод денежных средств'}
+                              onChange={(e) => setFormData({...formData, message: e.target.value})}
+                              placeholder="Перевод денежных средств"
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 

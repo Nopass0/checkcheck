@@ -245,6 +245,9 @@ def replace_text_alfa(file, file1, new_text):  # Замена текста в ф
 
     print(new_text["date"])
 
+    # Получаем сообщение или используем значение по умолчанию
+    message = new_text.get("message", "Перевод денежных средств")
+
     text = [
         "Сформирована", " ",
         f"{new_text['date'][:-3]} мск",
@@ -257,7 +260,7 @@ def replace_text_alfa(file, file1, new_text):  # Замена текста в ф
         "Счёт списания", " ", new_text["card_number"], "Идентификатор операции в СБП", " ",
         new_text["operation_id"],
         "Сообщение получателю", " ",
-        "Перевод денежных средств"
+        message
     ]
 
     for i in range(len(text)):
