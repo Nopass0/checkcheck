@@ -34,10 +34,10 @@ function parseTextInput(text: string): ReceiptData {
   if (hasFromBank) {
     const fromBank = firstLine
     if (fromBank === 'т банк' && lines.length !== 10) {
-      throw new Error('Для Т Банка должно быть 10 строк данных')
+      throw new Error('Для Т-Банка должно быть 10 строк данных')
     }
     if (fromBank === 'альфа' && lines.length !== 9) {
-      throw new Error('Для Альфа Банка должно быть 9 строк данных')
+      throw new Error('Для Альфа-Банка должно быть 9 строк данных')
     }
 
     if (fromBank === 'т банк') {
@@ -68,7 +68,7 @@ function parseTextInput(text: string): ReceiptData {
       }
     }
   } else {
-    // Обратная совместимость - если банк не указан, считаем что это Т Банк
+    // Обратная совместимость - если банк не указан, считаем что это Т-Банк
     if (lines.length !== 9) {
       throw new Error('Должно быть ровно 9 строк данных')
     }
@@ -94,7 +94,7 @@ function formatDataForBot(data: ReceiptData): string {
   lines.push(data.date)
   lines.push(data.total)
 
-  // Для Т Банка добавляем отправителя
+  // Для Т-Банка добавляем отправителя
   if (fromBank === 'т банк') {
     lines.push(data.sender || '')
   }
@@ -106,7 +106,7 @@ function formatDataForBot(data: ReceiptData): string {
   lines.push(data.receipt_number)
   lines.push(data.card_number)
 
-  // Для Альфа Банка добавляем сообщение
+  // Для Альфа-Банка добавляем сообщение
   if (fromBank === 'альфа') {
     lines.push(data.message || 'Перевод денежных средств')
   }
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     const fromBank = receiptData.from_bank || 'т банк'
     const requiredFields = ['date', 'total', 'phone_number', 'recipient', 'bank', 'operation_id', 'receipt_number', 'card_number']
 
-    // Для Т Банка отправитель обязателен
+    // Для Т-Банка отправитель обязателен
     if (fromBank === 'т банк') {
       requiredFields.push('sender')
     }

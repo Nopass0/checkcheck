@@ -111,6 +111,7 @@ export function generateRandomPhone(isAlfa: boolean = false): string {
 }
 
 const banks = [
+  'Т-Банк',
   'Тинькофф Банк',
   'Сбер',
   'ВТБ',
