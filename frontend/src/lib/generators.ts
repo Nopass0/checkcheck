@@ -95,14 +95,19 @@ export function generateRecipientName(isAlfa: boolean = false): string {
   }
 }
 
-export function generateRandomPhone(): string {
-  // Генерируем номер в формате +7 (9XX) XXX-XX-XX
+export function generateRandomPhone(isAlfa: boolean = false): string {
   const code = Math.floor(Math.random() * 100) + 900 // 900-999
   const part1 = Math.floor(Math.random() * 900) + 100 // 100-999
   const part2 = Math.floor(Math.random() * 90) + 10   // 10-99
   const part3 = Math.floor(Math.random() * 90) + 10   // 10-99
-  
-  return `+7 (${code}) ${part1}-${part2}-${part3}`
+
+  if (isAlfa) {
+    // Для Альфа Банка: 79XXXXXXXXX (11 цифр без форматирования)
+    return `7${code}${part1}${part2}${part3}`
+  } else {
+    // Для Т Банка: +7 (9XX) XXX-XX-XX
+    return `+7 (${code}) ${part1}-${part2}-${part3}`
+  }
 }
 
 const banks = [

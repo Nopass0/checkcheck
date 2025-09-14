@@ -91,7 +91,7 @@ export default function Home() {
       date: `${date} ${time}`,
       total: generateRandomAmount(isAlfa),
       sender: isAlfa ? '' : generateSenderName(),
-      phone_number: generateRandomPhone(),
+      phone_number: generateRandomPhone(isAlfa),
       recipient: generateRecipientName(isAlfa),
       bank: generateRandomBank(),
       operation_id: generateOperationId(isAlfa),
@@ -382,12 +382,25 @@ A52351158320990600000200115
                           />
                         )}
                         
-                        <PhoneInput
-                          label="Номер телефона"
-                          value={formData.phone_number}
-                          onChange={(value) => setFormData({...formData, phone_number: value})}
-                          placeholder="+7 (985) 535-25-11"
-                        />
+                        {formData.from_bank === 'альфа' ? (
+                          <div>
+                            <Label htmlFor="phone_alfa">Номер телефона получателя</Label>
+                            <InputWithGenerator
+                              value={formData.phone_number}
+                              onChange={(value) => setFormData({...formData, phone_number: value})}
+                              placeholder="79055555536"
+                              generator={() => generateRandomPhone(true)}
+                              generatorTooltip="Сгенерировать номер телефона"
+                            />
+                          </div>
+                        ) : (
+                          <PhoneInput
+                            label="Номер телефона"
+                            value={formData.phone_number}
+                            onChange={(value) => setFormData({...formData, phone_number: value})}
+                            placeholder="+7 (985) 535-25-11"
+                          />
+                        )}
                         
                         <RecipientInput
                           label="Получатель"
